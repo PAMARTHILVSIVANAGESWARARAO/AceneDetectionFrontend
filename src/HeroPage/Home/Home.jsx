@@ -3,8 +3,11 @@ import DiagonalGreenWave from "./DiagonalGreenWave";
 import heroine from "../../assets/hero.png";
 import "./Home.css";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const Home = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       <DiagonalGreenWave />
@@ -25,7 +28,7 @@ const Home = () => {
         {/* Buttons */}
         <div className="buttons mt-10 sm:mt-16 lg:mt-20 flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
           <Link
-            to="/login"
+            to={isAuthenticated ? "/dashboard" : "/login"}
             className="bg-teal-500 text-white px-8 sm:px-16 py-3 text-base sm:text-lg font-semibold border-2 border-teal-500 hover:bg-transparent hover:text-teal-500 transition-all duration-300 text-center"
           >
             GO TO DASHBOARD
