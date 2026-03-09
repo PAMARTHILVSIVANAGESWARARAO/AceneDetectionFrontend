@@ -1,0 +1,14 @@
+#particles{
+    z-index: -1;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+
+.home-name{font-family: 'Lavishly Yours', cursive;
+  letter-spacing: 2px;
+  font-weight: bolder;
+  color: teal;
+  font-size: 40px;
+  /* text-shadow: 0px 0px 10px teal; */
+}

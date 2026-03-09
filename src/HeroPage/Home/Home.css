@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Lavishly+Yours&display=swap');
+
+.welcome{
+  font-family: 'Lavishly Yours', cursive;
+  letter-spacing: 2px;
+  font-weight: bolder;
+  color: #0a1917;
+  font-size: 40px;
+}
+.home-head{font-family: 'Lavishly Yours', cursive;
+  letter-spacing: 2px;
+  font-weight: bolder;
+  color: teal;
+  font-size: 40px;
+  text-shadow: 0px 0px 10px teal;
+}
+.home-head:hover {
+  color: #0a1917;
+  text-shadow: 0px 0px 15px #0a1917;
+  transition: all 0.3s ease-in-out;
+}
