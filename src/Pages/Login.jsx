@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { authAPI } from "../services/api";
+import { authAPI, userAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
@@ -29,7 +29,26 @@ const Login = () => {
       const { token } = res.data;
       login(token);
       toast.success("Welcome back!");
-      navigate(from, { replace: true });
+
+      let dest = "/dashboard";
+      try {
+        const sRes = await userAPI.getUserStatus();
+        sessionStorage.setItem("acnepilot_status_cache", JSON.stringify(sRes.data));
+        
+        const lastRoute = localStorage.getItem("acnepilot_last_route");
+        if (!sRes.data.questionnaire_completed) {
+          dest = "/onboarding/questionnaire";
+        } else if (!sRes.data.acne_analysis_completed) {
+          dest = "/onboarding/upload";
+        } else if (lastRoute) {
+          dest = lastRoute;
+        }
+        localStorage.removeItem("acnepilot_last_route");
+      } catch (e) {
+        // Fallback to basic redirect if status fails
+      }
+
+      navigate(dest, { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || "Login failed";
       toast.error(msg);
@@ -139,9 +158,14 @@ const Login = () => {
               type="submit"
               disabled={loading}
               className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all duration-300 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)" }}
+              style={{ 
+                background: "linear-gradient(135deg, #0f766e, #14b8a6)",
+                cursor: loading ? "not-allowed" : "pointer",
+                opacity: loading ? 0.5 : 1,
+                pointerEvents: loading ? "none" : "auto"
+              }}
               onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = "0.9")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = "1")}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">

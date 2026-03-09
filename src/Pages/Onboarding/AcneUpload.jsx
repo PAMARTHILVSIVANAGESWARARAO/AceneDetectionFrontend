@@ -64,12 +64,15 @@ const AcneUpload = () => {
     Object.entries(files).forEach(([area, file]) => formData.append(area, file));
     try {
       const res = await userAPI.uploadAcneImages(formData);
-      const { areas } = res.data;
-      setResults(areas);
+      const { areas, overallSeverity: serverSeverity } = res.data;
+      setResults({ areas, overallSeverity: serverSeverity });
       toast.success("Analysis complete!");
     } catch (err) {
+      const status = err.response?.status;
       const msg = err.response?.data?.message || "Upload failed";
-      if (msg.includes("already")) {
+      if (status === 409 || msg.toLowerCase().includes("already")) {
+        sessionStorage.removeItem("acnepilot_status_cache");
+        window.dispatchEvent(new Event("auth:update_status"));
         toast.success("Analysis already completed!");
         navigate("/dashboard");
       } else {
@@ -80,15 +83,17 @@ const AcneUpload = () => {
     }
   };
 
-  const overallSeverity = results ? (() => {
-    const preds = results.map(a => a.prediction);
+  const overallSeverity = results?.overallSeverity || (() => {
+    // Fallback if backend doesn't send it, but DB should
+    if (!results?.areas) return null;
+    const preds = results.areas.map(a => a.prediction);
     if (preds.includes("severe")) return "severe";
     const mod = preds.filter(p => p === "moderate").length;
-    if (mod > preds.length / 2) return "moderate-severe";
+    if (mod > results.areas.length / 2) return "moderate-severe";
     if (mod > 0) return "moderate";
     if (preds.includes("mild")) return "mild";
     return "cleanskin";
-  })() : null;
+  })();
 
   return (
     <div className="min-h-screen relative overflow-hidden py-10 px-4"
@@ -139,7 +144,7 @@ const AcneUpload = () => {
 
             {/* Per-area results */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              {results.map((area) => {
+              {results.areas?.map((area) => {
                 const sev = SEVERITY_COLORS[area.prediction] || SEVERITY_COLORS.mild;
                 return (
                   <div key={area.area} className="rounded-2xl p-4"
@@ -166,7 +171,11 @@ const AcneUpload = () => {
               })}
             </div>
 
-            <button id="goto-dashboard" onClick={() => navigate("/dashboard")}
+            <button id="goto-dashboard" onClick={() => {
+              sessionStorage.removeItem("acnepilot_status_cache");
+              window.dispatchEvent(new Event("auth:update_status"));
+              navigate("/dashboard");
+            }}
               className="w-full py-3.5 rounded-xl font-semibold text-white text-sm"
               style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)" }}>
               Continue to Dashboard <i className="bi bi-arrow-right ml-2"></i>
@@ -236,7 +245,9 @@ const AcneUpload = () => {
               className="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-all duration-300"
               style={{
                 background: "linear-gradient(135deg, #0f766e, #14b8a6)",
-                opacity: (loading || Object.keys(files).length === 0) ? 0.5 : 1
+                opacity: (loading || Object.keys(files).length === 0) ? 0.5 : 1,
+                cursor: (loading || Object.keys(files).length === 0) ? "not-allowed" : "pointer",
+                pointerEvents: (loading || Object.keys(files).length === 0) ? "none" : "auto"
               }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

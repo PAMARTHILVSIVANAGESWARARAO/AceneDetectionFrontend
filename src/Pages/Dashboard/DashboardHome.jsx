@@ -179,7 +179,12 @@ const DashboardHome = () => {
           </p>
           <button id="generate-plan-btn" onClick={handleGeneratePlan} disabled={startingPlan}
             className="px-8 py-3 rounded-xl font-semibold text-white text-sm transition-all"
-            style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)", opacity: startingPlan ? 0.7 : 1 }}>
+            style={{ 
+              background: "linear-gradient(135deg, #0f766e, #14b8a6)", 
+              opacity: startingPlan ? 0.5 : 1,
+              cursor: startingPlan ? "not-allowed" : "pointer",
+              pointerEvents: startingPlan ? "none" : "auto"
+            }}>
             {startingPlan ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

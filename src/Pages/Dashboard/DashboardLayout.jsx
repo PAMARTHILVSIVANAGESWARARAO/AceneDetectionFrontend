@@ -77,7 +77,12 @@ const DashboardLayout = () => {
       <div className="p-3 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
         <button id="logout-btn" onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm transition-all duration-200"
-          style={{ color: "rgba(239,68,68,0.8)", border: "1px solid rgba(239,68,68,0.15)" }}
+          style={{ 
+            color: "rgba(239,68,68,0.8)", 
+            border: "1px solid rgba(239,68,68,0.15)",
+            cursor: "pointer",
+            pointerEvents: "auto"
+          }}
           onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; e.currentTarget.style.color = "#ef4444"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(239,68,68,0.8)"; }}>
           <i className="bi bi-box-arrow-left"></i>

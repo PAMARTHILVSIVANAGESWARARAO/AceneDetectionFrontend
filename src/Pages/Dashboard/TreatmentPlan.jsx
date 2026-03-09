@@ -31,13 +31,50 @@ const TreatmentPlan = () => {
     loadPlan();
   }, []);
 
+  useEffect(() => {
+    if (!plan || loading) return;
+    
+    // Check if current day has already been reviewed by looking at previous day historically?
+    // Bug fix: alreadyReviewed should only come from the database (previous day's feedback not null)
+    // Actually, "currentDay" in plan is the active day. Before submitting, it's N. 
+    // After submitting, the backend increments currentDay to N+1 instantly, and that day has null feedback.
+    // So if plan.currentDay > 1 AND the previous day (currentDay - 1) has feedback != null, we can render "already reviewed"
+    // Wait, the prompt says: "derive alreadyReviewed ONLY from the database: Look at the PREVIOUS day (currentDay - 1) in plan.days and check if its feedback is not null. If true -> show the already reviewed state. The current day by definition never has feedback yet."
+    
+    // For auto trigger:
+    const prevDayIdx = plan.days?.findIndex(d => d.day === plan.currentDay - 1);
+    const prevDay = prevDayIdx >= 0 ? plan.days[prevDayIdx] : null;
+    const isAlreadyReviewed = prevDay?.feedback != null;
+
+    if (!isAlreadyReviewed) {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0); // next midnight
+      const msUntilMidnight = midnight.getTime() - now.getTime();
+
+      const timer = setTimeout(async () => {
+        try {
+          await treatmentAPI.submitReview({
+            day: plan.currentDay,
+            feedback: "negative",
+            notes: "Auto-submitted: User did not complete today's treatment review."
+          });
+          toast.error("Day automatically closed — treatment not reviewed");
+          loadPlan();
+        } catch (e) {
+          console.error("Auto-submit failed", e);
+        }
+      }, msUntilMidnight);
+
+      return () => clearTimeout(timer);
+    }
+  }, [plan, loading]);
+
   const loadPlan = async () => {
     setLoading(true);
     try {
       const res = await treatmentAPI.getStatus();
       setPlan(res.data);
-      const currentDay = res.data.days?.find(d => d.day === res.data.currentDay);
-      if (currentDay?.feedback) setSubmitted(true);
     } catch (err) {
       const msg = err.response?.data?.message || "";
       if (msg.includes("No treatment plan")) {
@@ -51,8 +88,12 @@ const TreatmentPlan = () => {
   };
 
   const handleSubmitReview = async () => {
-    if (!feedback) { toast.error("Please select positive or negative feedback"); return; }
     setSubmitting(true);
+    if (!feedback) { 
+      toast.error("Please select positive or negative feedback");
+      setSubmitting(false);
+      return; 
+    }
     try {
       const res = await treatmentAPI.submitReview({
         day: plan.currentDay,
@@ -60,7 +101,6 @@ const TreatmentPlan = () => {
         notes: notes.trim() || undefined,
       });
       setNextDayPlan(res.data.plan);
-      setSubmitted(true);
       toast.success(`Day ${plan.currentDay} reviewed! Day ${res.data.day} plan ready.`);
       // Reload
       const updated = await treatmentAPI.getStatus();
@@ -87,7 +127,9 @@ const TreatmentPlan = () => {
 
   const currentDayData = plan.days?.find(d => d.day === plan.currentDay);
   const sev = SEVERITY_COLORS[plan.overallSeverity];
-  const alreadyReviewed = currentDayData?.feedback || submitted;
+  const prevDayIdx = plan.days?.findIndex(d => d.day === plan.currentDay - 1);
+  const prevDay = prevDayIdx >= 0 ? plan.days[prevDayIdx] : null;
+  const alreadyReviewed = prevDay?.feedback != null;
 
   return (
     <div className="p-5 lg:p-8 max-w-3xl mx-auto">
@@ -175,9 +217,14 @@ const TreatmentPlan = () => {
           <p className="text-slate-400 text-sm">
             {nextDayPlan ? "Your Day " + plan.currentDay + " plan is shown above." : "You've already submitted your review for this day."}
           </p>
-          <button onClick={loadPlan}
-            className="mt-4 px-5 py-2 rounded-xl text-sm font-medium text-white"
-            style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)" }}>
+          <button onClick={loadPlan} disabled={loading}
+            className="mt-4 px-5 py-2 rounded-xl text-sm font-medium text-white transition-all duration-300"
+            style={{ 
+              background: "linear-gradient(135deg, #0f766e, #14b8a6)",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.5 : 1,
+              pointerEvents: loading ? "none" : "auto"
+            }}>
             <i className="bi bi-arrow-clockwise mr-1.5"></i> Refresh
           </button>
         </div>
@@ -219,7 +266,12 @@ const TreatmentPlan = () => {
 
           <button id="submit-review" onClick={handleSubmitReview} disabled={submitting || !feedback}
             className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all"
-            style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)", opacity: (submitting || !feedback) ? 0.6 : 1 }}>
+            style={{ 
+              background: "linear-gradient(135deg, #0f766e, #14b8a6)", 
+              opacity: (submitting || !feedback) ? 0.5 : 1,
+              cursor: (submitting || !feedback) ? "not-allowed" : "pointer",
+              pointerEvents: (submitting || !feedback) ? "none" : "auto"
+            }}>
             {submitting ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

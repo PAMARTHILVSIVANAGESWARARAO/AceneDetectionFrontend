@@ -151,7 +151,12 @@ const VerifyOtp = () => {
 
             <button id="otp-submit" type="submit" disabled={loading}
               className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all duration-300 mb-4"
-              style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)", opacity: loading ? 0.7 : 1 }}>
+              style={{ 
+                background: "linear-gradient(135deg, #0f766e, #14b8a6)", 
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? "not-allowed" : "pointer",
+                pointerEvents: loading ? "none" : "auto"
+              }}>
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -166,8 +171,13 @@ const VerifyOtp = () => {
 
           <div className="text-center">
             <p className="text-slate-400 text-sm mb-2">Didn't receive the code?</p>
-            <button id="resend-otp" onClick={handleResend} disabled={resending || countdown > 0}
-              className="text-teal-400 hover:text-teal-300 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <button id="resend-otp" onClick={(e) => { setResending(true); handleResend(e); }} disabled={resending || countdown > 0}
+              className="text-teal-400 hover:text-teal-300 text-sm font-medium transition-colors"
+              style={{ 
+                cursor: (resending || countdown > 0) ? "not-allowed" : "pointer",
+                opacity: (resending || countdown > 0) ? 0.5 : 1,
+                pointerEvents: (resending || countdown > 0) ? "none" : "auto"
+              }}>
               {resending ? "Sending..." : countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP"}
             </button>
           </div>

@@ -24,9 +24,7 @@ apiClient.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("acnepilot_token");
-      localStorage.removeItem("acnepilot_user");
-      window.location.href = "/login";
+      window.dispatchEvent(new Event("auth:logout"));
     }
     return Promise.reject(error);
   }

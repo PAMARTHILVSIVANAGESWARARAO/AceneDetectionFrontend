@@ -64,12 +64,20 @@ const Questionnaire = () => {
     setLoading(true);
     try {
       await userAPI.saveUserInfo(data);
+      sessionStorage.removeItem("acnepilot_status_cache");
+      window.dispatchEvent(new Event("auth:update_status"));
       toast.success("Questionnaire saved!");
       navigate("/onboarding/upload");
     } catch (err) {
+      const status = err.response?.status;
       const msg = err.response?.data?.message || "Failed to save";
-      if (msg.includes("already")) navigate("/onboarding/upload");
-      else toast.error(msg);
+      if (status === 409 || msg.toLowerCase().includes("already")) {
+        sessionStorage.removeItem("acnepilot_status_cache");
+        window.dispatchEvent(new Event("auth:update_status"));
+        navigate("/onboarding/upload");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -217,6 +225,17 @@ const Questionnaire = () => {
               ))}
             </div>
           </div>
+          {data.foodAllergy === "Yes" && (
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Allergy foods</label>
+              <div className="grid grid-cols-2 gap-2">
+                {["Dairy", "Gluten", "Nuts", "Eggs", "Shellfish", "Soy"].map(v => (
+                  <Checkbox key={v} label={v} name="allergyFoods" value={v}
+                    checked={data.allergyFoods.includes(v)} onChange={() => toggleArray("allergyFoods", v)} />
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">Dairy consumption</label>
             <div className="grid grid-cols-2 gap-2">
@@ -268,7 +287,12 @@ const Questionnaire = () => {
     if (step === 0) return data.ageGroup && data.sex && data.skinType && data.acneDuration;
     if (step === 1) return data.acneLocation.length > 0 && data.sensitiveSkin;
     if (step === 2) return data.medicationAllergy;
-    if (step === 3) return data.usingAcneProducts && data.dairyConsumption && data.foodAllergy;
+    if (step === 3) {
+      if (!data.usingAcneProducts || !data.dairyConsumption || !data.foodAllergy) return false;
+      if (data.usingAcneProducts === "Yes" && data.currentProducts.length === 0) return false;
+      if (data.foodAllergy === "Yes" && data.allergyFoods.length === 0) return false;
+      return true;
+    }
     if (step === 4) return data.stressLevel && data.sleepHours;
     return true;
   };
@@ -357,13 +381,23 @@ const Questionnaire = () => {
             {step < STEPS.length - 1 ? (
               <button id={`questionnaire-next-${step}`} onClick={() => setStep(s => s + 1)} disabled={!canProceed()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
-                style={{ background: canProceed() ? "linear-gradient(135deg, #0f766e, #14b8a6)" : "rgba(255,255,255,0.08)", opacity: canProceed() ? 1 : 0.5 }}>
+                style={{ 
+                  background: canProceed() ? "linear-gradient(135deg, #0f766e, #14b8a6)" : "rgba(255,255,255,0.08)", 
+                  opacity: canProceed() ? 1 : 0.5,
+                  cursor: canProceed() ? "pointer" : "not-allowed",
+                  pointerEvents: canProceed() ? "auto" : "none"
+                }}>
                 Continue <i className="bi bi-arrow-right ml-1.5"></i>
               </button>
             ) : (
               <button id="questionnaire-submit" onClick={handleSubmit} disabled={loading || !canProceed()}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
-                style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)", opacity: loading ? 0.7 : 1 }}>
+                style={{ 
+                  background: "linear-gradient(135deg, #0f766e, #14b8a6)", 
+                  opacity: (loading || !canProceed()) ? 0.5 : 1,
+                  cursor: (loading || !canProceed()) ? "not-allowed" : "pointer",
+                  pointerEvents: (loading || !canProceed()) ? "none" : "auto"
+                }}>
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

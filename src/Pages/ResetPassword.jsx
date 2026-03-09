@@ -145,8 +145,13 @@ const ResetPassword = () => {
             </div>
 
             <button id="reset-submit" type="submit" disabled={loading}
-              className="w-full py-3 rounded-xl font-semibold text-white text-sm"
-              style={{ background: "linear-gradient(135deg, #0f766e, #14b8a6)", opacity: loading ? 0.7 : 1 }}>
+              className="w-full py-3 rounded-xl font-semibold text-white text-sm transition-all duration-300"
+              style={{ 
+                background: "linear-gradient(135deg, #0f766e, #14b8a6)", 
+                opacity: loading ? 0.5 : 1,
+                cursor: loading ? "not-allowed" : "pointer",
+                pointerEvents: loading ? "none" : "auto"
+              }}>
               {loading ? "Resetting..." : "Reset Password"}
             </button>
           </form>

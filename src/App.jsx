@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 // Landing
@@ -27,9 +27,23 @@ import Profile from "./Pages/Dashboard/Profile";
 // Guards
 import ProtectedRoute from "./components/ProtectedRoute";
 
+const RouteTracker = () => {
+  const location = useLocation();
+  useEffect(() => {
+    const skipRoutes = ["/login", "/register", "/verify-otp", "/forgot-password", "/reset-password"];
+    const path = location.pathname;
+    const token = localStorage.getItem("acnepilot_token");
+    if (token && !skipRoutes.some(route => path.startsWith(route))) {
+      localStorage.setItem("acnepilot_last_route", path);
+    }
+  }, [location]);
+  return null;
+};
+
 const App = () => {
   return (
     <BrowserRouter>
+      <RouteTracker />
       <Toaster position="top-center" toastOptions={{
         style: {
           background: "rgba(15,25,20,0.95)",
