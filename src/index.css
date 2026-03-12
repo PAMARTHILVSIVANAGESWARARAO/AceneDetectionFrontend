@@ -20,19 +20,25 @@
   font-weight: 900;
   font-size: 30px;
 }
+
 ::-webkit-scrollbar {
-    width: 6px;         /* Thin scrollbar width */
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: #ffffff25;  /* Optional: scrollbar track color */
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background-color: rgb(99, 255, 255);    /* Scrollbar color */
-    border-radius: 10px;       /* Rounded edges */
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgb(99, 255, 255);          /* On hover */
-  }
+  width: 6px;
+  /* Thin scrollbar width */
+}
+
+::-webkit-scrollbar-track {
+  background: #ffffff25;
+  /* Optional: scrollbar track color */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(99, 255, 255);
+  /* Scrollbar color */
+  border-radius: 10px;
+  /* Rounded edges */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(99, 255, 255);
+  /* On hover */
+}
