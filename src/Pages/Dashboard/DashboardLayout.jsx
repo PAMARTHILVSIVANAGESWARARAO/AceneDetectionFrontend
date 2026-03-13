@@ -9,9 +9,10 @@ import { animate, stagger } from "animejs";
 // ─────────────────────────────────────────────
 const NAV_ITEMS = [
   { to: "/dashboard",           label: "Overview",       icon: "bi-house",            end: true  },
-  { to: "/dashboard/treatment", label: "Treatment Plan", icon: "bi-clipboard2-pulse", end: false },
+  { to: "/dashboard/treatment", label: "Treatment Plan", icon: "bi-card-heading", end: false },
   { to: "/dashboard/history",   label: "Progress",       icon: "bi-graph-up-arrow",   end: false },
   { to: "/dashboard/profile",   label: "Profile",        icon: "bi-person-circle",    end: false },
+
 ];
 
 // ─────────────────────────────────────────────
@@ -182,12 +183,16 @@ const DashboardLayout = () => {
           easing:     "easeOutCubic",
         });
       }
-      animate(".dl-nav-item", {
-        translateX: [-16, 0],
-        opacity:  [0, 1],
-        delay:    stagger(55, { start: 160 }),
-        duration: 360,
-        easing:   "easeOutCubic",
+      requestAnimationFrame(() => {
+        const navItems = document.querySelectorAll(".dl-nav-item");
+        if (!navItems.length) return;
+        animate(".dl-nav-item", {
+          translateX: [-16, 0],
+          opacity:  [0, 1],
+          delay:    stagger(55, { start: 160 }),
+          duration: 360,
+          easing:   "easeOutCubic",
+        });
       });
     }, 60);
     return () => clearTimeout(t);
@@ -303,19 +308,19 @@ const DashboardLayout = () => {
                     e.currentTarget.style.background = "transparent";
                 }}
               >
-                <i className={`bi ${icon}`} style={{ fontSize: 15, flexShrink: 0 }} />
-                <span>{label}</span>
-
-                {/* active indicator pip */}
-                <NavLink to={to} end={end} style={{ display: "none" }}>
-                  {({ isActive }) => isActive && (
+                {({ isActive }) => (
+                  <>
+                    <i className={`bi ${icon}`} style={{ fontSize: 15, flexShrink: 0 }} />
+                    <span>{label}</span>
+                    {isActive && (
                     <span style={{
                       marginLeft: "auto", width: 6, height: 6, borderRadius: "50%",
                       background: "rgba(255,255,255,0.7)",
                       boxShadow: "0 0 6px rgba(255,255,255,0.6)",
                     }} />
-                  )}
-                </NavLink>
+                    )}
+                  </>
+                )}
               </NavLink>
             ))}
           </div>

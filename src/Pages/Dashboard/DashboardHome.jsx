@@ -17,13 +17,14 @@ const SEV = {
   cleanskin:         { bg:"rgba(13,148,136,0.09)",  bdr:"#0d9488", txt:"#0f766e", label:"Clear Skin",      icon:"bi-emoji-smile"        },
   mild:              { bg:"rgba(202,138,4,0.09)",   bdr:"#ca8a04", txt:"#a16207", label:"Mild",            icon:"bi-exclamation-circle"  },
   moderate:          { bg:"rgba(234,88,12,0.09)",   bdr:"#ea580c", txt:"#c2410c", label:"Moderate",        icon:"bi-exclamation-triangle"},
-  "unknown": { 
+  "moderate-severe": { 
   bg: "rgba(255,0,0,0.1)", 
   bdr: "#ff0000", 
   txt: "#cc0000", 
-  label: "Unknown", 
+  label: "Moderate-severe", 
   icon: "bi-exclamation-octagon" 
 },
+
   severe:            { bg:"rgba(185,28,28,0.1)",    bdr:"#b91c1c", txt:"#991b1b", label:"Severe",          icon:"bi-shield-exclamation"  },
 };
 
@@ -236,16 +237,13 @@ const SeverityDonut = ({ severity }) => {
   const s = SEV[severity];
   if (!s) return null;
 
-  const ORDER   = ["cleanskin","mild","moderate","severe" , "unknown"];
+  const ORDER   = ["cleanskin","mild","moderate","moderate-severe","severe"];
   const idx     = ORDER.indexOf(severity);
-  const filled  = idx + 1;
-  const empty   = ORDER.length - filled;
 
   const COLORS  = ["#0d9488","#ca8a04","#ea580c","#dc2626","#b91c1c"];
-  const BG      = ["rgba(13,148,136,0.12)","rgba(202,138,4,0.12)","rgba(234,88,12,0.12)","rgba(220,38,38,0.12)","rgba(185,28,28,0.12)"];
 
   const data = {
-    labels: ORDER.map(k=>SEV[k].label),
+    labels: ORDER.map(k=>SEV[k]?.label || k),
     datasets:[{
       data: ORDER.map((_,i) => i<=idx ? 1 : 0.18),
       backgroundColor: ORDER.map((_,i) => i<=idx ? COLORS[i] : "rgba(20,184,166,0.07)"),
@@ -277,7 +275,7 @@ const SeverityDonut = ({ severity }) => {
         {ORDER.map((k,i)=>(
           <div key={k} style={{display:"flex",alignItems:"center",gap:7}}>
             <div style={{width:7,height:7,borderRadius:"50%",background:i<=idx?COLORS[i]:"rgba(20,184,166,0.18)",flexShrink:0}}/>
-            <span style={{fontSize:10.5,color:i<=idx?"#334155":"#94a3b8",fontWeight:i===idx?700:500,flex:1}}>{SEV[k].label}</span>
+            <span style={{fontSize:10.5,color:i<=idx?"#334155":"#94a3b8",fontWeight:i===idx?700:500,flex:1}}>{SEV[k]?.label || k}</span>
             {i===idx && <span style={{fontSize:9,fontWeight:700,color:s.txt,background:s.bg,padding:"1px 6px",borderRadius:10,border:`1px solid ${s.bdr}40`}}>current</span>}
           </div>
         ))}
