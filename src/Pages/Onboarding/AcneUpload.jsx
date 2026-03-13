@@ -36,8 +36,8 @@ const SEVERITY_COLORS = {
   cleanskin:         { bg: "rgba(13,148,136,0.08)",  border: "#0d9488", text: "#0f766e", grad: "linear-gradient(135deg,#0d9488,#14b8a6)", hex: "#14b8a6", label: "Clear Skin"      },
   mild:              { bg: "rgba(234,179,8,0.08)",   border: "#ca8a04", text: "#a16207", grad: "linear-gradient(135deg,#ca8a04,#eab308)", hex: "#eab308", label: "Mild"            },
   moderate:          { bg: "rgba(234,88,12,0.08)",   border: "#ea580c", text: "#c2410c", grad: "linear-gradient(135deg,#ea580c,#f97316)", hex: "#f97316", label: "Moderate"        },
-  "moderate-severe": { bg: "rgba(220,38,38,0.08)",   border: "#dc2626", text: "#b91c1c", grad: "linear-gradient(135deg,#dc2626,#ef4444)", hex: "#ef4444", label: "Mod-Severe"      },
   severe:            { bg: "rgba(185,28,28,0.08)",   border: "#b91c1c", text: "#991b1b", grad: "linear-gradient(135deg,#b91c1c,#dc2626)", hex: "#dc2626", label: "Severe"          },
+  unknown:           { bg: "rgba(100,116,139,0.08)", border: "#475569", text: "#475569", grad: "linear-gradient(135deg,#64748b,#94a3b8)", hex: "#64748b", label: "Unknown"         },
 };
 
 // ── Skeleton helpers ──────────────────────────────────────────────────────
@@ -435,10 +435,9 @@ const AcneUpload = () => {
     if (!results?.areas) return null;
     const preds = results.areas.map(a => a.prediction);
     if (preds.includes("severe")) return "severe";
-    const mod = preds.filter(p => p === "moderate").length;
-    if (mod > results.areas.length / 2) return "moderate-severe";
-    if (mod > 0) return "moderate";
+    if (preds.includes("moderate")) return "moderate";
     if (preds.includes("mild")) return "mild";
+    if (preds.includes("unknown") && !preds.some(p => p !== "unknown")) return "unknown";
     return "cleanskin";
   })();
 

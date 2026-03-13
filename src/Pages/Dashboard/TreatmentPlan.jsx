@@ -19,8 +19,8 @@ const SEV = {
   cleanskin:         { bg:"rgba(13,148,136,0.09)",  bdr:"#0d9488", txt:"#0f766e", label:"Clear Skin"      },
   mild:              { bg:"rgba(202,138,4,0.09)",   bdr:"#ca8a04", txt:"#a16207", label:"Mild"            },
   moderate:          { bg:"rgba(234,88,12,0.09)",   bdr:"#ea580c", txt:"#c2410c", label:"Moderate"        },
-  "moderate-severe": { bg:"rgba(220,38,38,0.09)",   bdr:"#dc2626", txt:"#b91c1c", label:"Moderate-Severe" },
   severe:            { bg:"rgba(185,28,28,0.1)",    bdr:"#b91c1c", txt:"#991b1b", label:"Severe"          },
+  unknown:           { bg:"rgba(100,116,139,0.09)", bdr:"#475569", txt:"#475569", label:"Unknown"         },
 };
 
 // ─── Shared tokens ────────────────────────────────────────────────────────
@@ -281,7 +281,9 @@ const TreatmentPlan = () => {
   if (!plan) return null;
 
   const currentDayData = plan.days?.find(d => d.day === plan.currentDay);
-  const sev            = SEV[plan.overallSeverity];
+  const rawSeverity    = plan.overallSeverity;
+  const severity       = rawSeverity === "moderate-severe" ? "unknown" : rawSeverity;
+  const sev            = SEV[severity];
   const alreadyReviewed = currentDayData?.feedback != null;
 
   return (

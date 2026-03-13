@@ -4,28 +4,22 @@ import { useAuth } from "../../context/AuthContext";
 import { userAPI, treatmentAPI, authAPI } from "../../services/api";
 import toast, { Toaster } from "react-hot-toast";
 import { animate, stagger } from "animejs";
-import {
-  Chart as ChartJS, ArcElement, Tooltip, Legend,
-  LineElement, PointElement, LinearScale, CategoryScale, Filler,
-} from "chart.js";
-import { Doughnut, Line } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
 
-ChartJS.register(ArcElement, Tooltip, Legend, LineElement, PointElement, LinearScale, CategoryScale, Filler);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // ─── Severity palette ─────────────────────────────────────────────────────
 const SEV = {
   cleanskin:         { bg:"rgba(13,148,136,0.09)",  bdr:"#0d9488", txt:"#0f766e", label:"Clear Skin",      icon:"bi-emoji-smile"        },
   mild:              { bg:"rgba(202,138,4,0.09)",   bdr:"#ca8a04", txt:"#a16207", label:"Mild",            icon:"bi-exclamation-circle"  },
   moderate:          { bg:"rgba(234,88,12,0.09)",   bdr:"#ea580c", txt:"#c2410c", label:"Moderate",        icon:"bi-exclamation-triangle"},
-  "moderate-severe": { 
-  bg: "rgba(255,0,0,0.1)", 
-  bdr: "#ff0000", 
-  txt: "#cc0000", 
-  label: "Moderate-severe", 
-  icon: "bi-exclamation-octagon" 
-},
-
   severe:            { bg:"rgba(185,28,28,0.1)",    bdr:"#b91c1c", txt:"#991b1b", label:"Severe",          icon:"bi-shield-exclamation"  },
+  unknown:           { bg:"rgba(100,116,139,0.09)", bdr:"#475569", txt:"#475569", label:"Unknown",         icon:"bi-question-circle"     },
+};
+const SEV_HEX = {
+  cleanskin:"#0d9488", mild:"#ca8a04", moderate:"#ea580c",
+  severe:"#b91c1c", unknown:"#64748b",
 };
 
 // ─── Card style token ─────────────────────────────────────────────────────
@@ -51,7 +45,7 @@ const RESPONSIVE_CSS = `
     .dh-header-widgets { width: 100% !important; flex-direction: column !important; }
     .dh-clock-widget, .dh-calendar-widget { width: 100% !important; min-width: 0 !important; }
     .dh-stat-grid { grid-template-columns: 1fr !important; }
-    .dh-charts-grid { grid-template-columns: 1fr !important; }
+    .dh-analysis-grid { grid-template-columns: 1fr !important; }
     .dh-session-grid { grid-template-columns: 1fr !important; }
   }
   @media (max-width: 640px) {
@@ -232,58 +226,56 @@ const CalendarWidget = () => {
   );
 };
 
-// ─── Severity Donut ───────────────────────────────────────────────────────
-const SeverityDonut = ({ severity }) => {
-  const s = SEV[severity];
-  if (!s) return null;
-
-  const ORDER   = ["cleanskin","mild","moderate","moderate-severe","severe"];
-  const idx     = ORDER.indexOf(severity);
-
-  const COLORS  = ["#0d9488","#ca8a04","#ea580c","#dc2626","#b91c1c"];
-
-  const data = {
-    labels: ORDER.map(k=>SEV[k]?.label || k),
-    datasets:[{
-      data: ORDER.map((_,i) => i<=idx ? 1 : 0.18),
-      backgroundColor: ORDER.map((_,i) => i<=idx ? COLORS[i] : "rgba(20,184,166,0.07)"),
-      borderColor:     ORDER.map((_,i) => i<=idx ? COLORS[i] : "rgba(20,184,166,0.12)"),
-      borderWidth:2, hoverOffset:6,
-    }],
-  };
-
+// ─── Area donut (copied from Profile) ────────────────────────────────────
+const AreaDonut = ({ areas }) => {
+  const counts = {};
+  areas.forEach(a=>{ counts[a.prediction]=(counts[a.prediction]||0)+1; });
+  const ORDER  = ["cleanskin","mild","moderate","severe","unknown"];
+  const active = ORDER.filter(k=>counts[k]);
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
-      <div style={{position:"relative",width:140,height:140}}>
-        <Doughnut data={data} options={{
+      <div style={{position:"relative",width:145,height:145}}>
+        <Doughnut data={{
+          labels: active.map(k=>SEV[k]?.label||k),
+          datasets:[{
+            data:   active.map(k=>counts[k]),
+            backgroundColor: active.map(k=>`${SEV_HEX[k]}cc`),
+            borderColor:     active.map(k=>SEV_HEX[k]),
+            borderWidth:2, hoverOffset:6,
+          }],
+        }} options={{
           cutout:"68%",
-          plugins:{legend:{display:false},tooltip:{
-            backgroundColor:"rgba(255,255,255,0.95)",
-            titleColor:"#0f172a",bodyColor:"#475569",
-            borderColor:"rgba(20,184,166,0.3)",borderWidth:1,
-            padding:10,cornerRadius:10,
-            callbacks:{label:ctx=>`  ${ctx.label}`},
-          }},
+          plugins:{
+            legend:{display:false},
+            tooltip:{
+              backgroundColor:"rgba(255,255,255,0.95)",
+              titleColor:"#0f172a",bodyColor:"#475569",
+              borderColor:"rgba(20,184,166,0.3)",borderWidth:1,
+              padding:9,cornerRadius:9,
+              callbacks:{label:ctx=>`  ${ctx.label}: ${ctx.raw} area${ctx.raw>1?"s":""}`},
+            },
+          },
           animation:{animateRotate:true,duration:900},
         }}/>
         <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",pointerEvents:"none"}}>
-          <i className={`bi ${s.icon}`} style={{fontSize:16,color:s.txt,marginBottom:2}}/>
-          <span style={{fontSize:11,fontWeight:800,color:s.txt,lineHeight:1}}>{s.label}</span>
+          <span style={{fontSize:22,fontWeight:900,color:"#0f2b27",lineHeight:1}}>{areas.length}</span>
+          <span style={{fontSize:9.5,color:"#64748b",fontWeight:600}}>areas</span>
         </div>
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:4,width:"100%"}}>
-        {ORDER.map((k,i)=>(
-          <div key={k} style={{display:"flex",alignItems:"center",gap:7}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:i<=idx?COLORS[i]:"rgba(20,184,166,0.18)",flexShrink:0}}/>
-            <span style={{fontSize:10.5,color:i<=idx?"#334155":"#94a3b8",fontWeight:i===idx?700:500,flex:1}}>{SEV[k]?.label || k}</span>
-            {i===idx && <span style={{fontSize:9,fontWeight:700,color:s.txt,background:s.bg,padding:"1px 6px",borderRadius:10,border:`1px solid ${s.bdr}40`}}>current</span>}
+      <div style={{display:"flex",flexDirection:"column",gap:5,width:"100%"}}>
+        {active.map(k=>(
+          <div key={k} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:SEV_HEX[k],flexShrink:0}}/>
+              <span style={{fontSize:10.5,color:"#64748b",fontWeight:500}}>{SEV[k]?.label}</span>
+            </div>
+            <span style={{fontSize:10.5,fontWeight:800,color:SEV_HEX[k]}}>{counts[k]}</span>
           </div>
         ))}
       </div>
     </div>
   );
 };
-
 
 // ─── Main component ───────────────────────────────────────────────────────
 const DashboardHome = () => {
@@ -351,8 +343,10 @@ const DashboardHome = () => {
   );
 
   const username      = userData?.user?.username || "User";
-  const severity      = treatmentPlan?.overallSeverity;
+  const rawSeverity   = treatmentPlan?.overallSeverity;
+  const severity      = rawSeverity === "moderate-severe" ? "unknown" : rawSeverity;
   const sev           = SEV[severity];
+  const acneAreas     = userData?.acne_analysis?.areas || [];
   const today         = treatmentPlan?.days?.find(d => d.day === treatmentPlan?.currentDay);
   const daysCompleted = treatmentPlan?.totalDaysCompleted || 0;
 
@@ -424,21 +418,6 @@ const DashboardHome = () => {
           ))}
         </div>
 
-        {/* ── Charts row: adherence line + severity donut + session donut ── */}
-        {treatmentPlan && (
-          <div className="dh-card dh-charts-grid" style={{display:"grid",gridTemplateColumns:"1fr 180px 160px",gap:14,marginBottom:18}}>
-            {/* Line chart */}
-            
-            {/* Severity donut */}
-            <div style={{...CARD,padding:"18px 14px"}}>
-              <div style={SEC_LABEL}>Severity<div style={SEC_LINE}/></div>
-              <SeverityDonut severity={severity}/>
-            </div>
-            {/* Session donut */}
-
-          </div>
-        )}
-
         {/* ── Onboarding checklist ── */}
         {!status?.both_completed && (
           <div className="dh-card" style={{...CARD,padding:"22px 20px",marginBottom:16}}>
@@ -474,6 +453,55 @@ const DashboardHome = () => {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Acne Analysis Results ── */}
+        {acneAreas.length > 0 && (
+          <div className="dh-card" style={{...CARD,padding:"20px",marginBottom:16}}>
+            <div style={{...SEC_LABEL,marginBottom:16}}>
+              Acne Analysis Results<div style={SEC_LINE}/>
+            </div>
+            <div className="dh-analysis-grid" style={{display:"grid",gridTemplateColumns:"1fr 190px",gap:16,alignItems:"start"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {acneAreas.map(area=>{
+                  const s = SEV[area.prediction] || SEV.mild;
+                  const areaLabel = area.area?.replace(/([A-Z])/g," $1").trim() || "Area";
+                  return (
+                    <div key={area.area} style={{
+                      padding:"11px 13px",borderRadius:13,
+                      background:"rgba(248,253,252,0.8)",
+                      border:`1.5px solid ${s.bdr}30`,
+                    }}>
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                        <span style={{fontSize:13,fontWeight:800,color:"#0f2b27",textTransform:"capitalize"}}>{areaLabel}</span>
+                        <span style={{
+                          fontSize:10.5,fontWeight:700,padding:"3px 10px",borderRadius:20,flexShrink:0,
+                          background:s.bg,color:s.txt,border:`1px solid ${s.bdr}45`,
+                        }}>{s.label}</span>
+                      </div>
+                      <div style={{display:"flex",alignItems:"center",gap:9}}>
+                        <span style={{fontSize:10,fontWeight:600,color:"#94a3b8",flexShrink:0}}>Confidence</span>
+                        <div style={{flex:1,height:5,borderRadius:99,background:"rgba(20,184,166,0.1)",overflow:"hidden"}}>
+                          <div style={{
+                            height:"100%",borderRadius:99,
+                            background:`linear-gradient(90deg,${s.bdr},${s.bdr}88)`,
+                            width:`${area.confidence}%`,
+                            transition:"width 1s cubic-bezier(0.16,1,0.3,1)",
+                          }}/>
+                        </div>
+                        <span style={{fontSize:10.5,fontWeight:800,color:s.txt,flexShrink:0}}>
+                          {Number(area.confidence || 0).toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",justifyContent:"center"}}>
+                <AreaDonut areas={acneAreas}/>
+              </div>
             </div>
           </div>
         )}

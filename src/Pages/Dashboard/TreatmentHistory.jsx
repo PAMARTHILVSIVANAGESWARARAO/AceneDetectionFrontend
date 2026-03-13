@@ -15,8 +15,8 @@ const SEV = {
   cleanskin:         { txt:"#0f766e", label:"Clear Skin"      },
   mild:              { txt:"#a16207", label:"Mild"            },
   moderate:          { txt:"#c2410c", label:"Moderate"        },
-  "moderate-severe": { txt:"#b91c1c", label:"Moderate-Severe" },
   severe:            { txt:"#991b1b", label:"Severe"          },
+  unknown:           { txt:"#475569", label:"Unknown"         },
 };
 
 // ─── Tokens ───────────────────────────────────────────────────────────────
@@ -241,7 +241,9 @@ const TreatmentHistory = () => {
     </div>
   );
 
-  const sev           = SEV[plan.overallSeverity];
+  const rawSeverity   = plan.overallSeverity;
+  const severity      = rawSeverity === "moderate-severe" ? "unknown" : rawSeverity;
+  const sev           = SEV[severity];
   const completedDays = plan.days?.filter(d=>d.feedback!==null)||[];
   const positives     = completedDays.filter(d=>d.feedback==="positive").length;
   const negatives     = completedDays.filter(d=>d.feedback==="negative").length;
