@@ -395,11 +395,11 @@ const DashboardHome = () => {
         </div>
 
         {/* ── Stat cards ── */}
-        <div className="dh-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:13,marginBottom:18}}>
+        <div className="dh-stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:13,marginBottom:18}}>
           {[
             {label:"Current Day",    value: treatmentPlan?`Day ${treatmentPlan.currentDay}`:"—",     icon:"bi-calendar-check",    color:"#0d9488",  bg:"rgba(13,148,136,0.08)"},
             {label:"Days Completed", value: daysCompleted,                                            icon:"bi-check-circle",      color:"#0ea5e9",  bg:"rgba(14,165,233,0.08)"},
-            {label:"Skin Severity",  value: sev?.label||"Pending",                                   icon: sev?.icon||"bi-activity", color: sev?.txt||"#64748b", bg: sev?.bg||"rgba(20,184,166,0.06)"},
+            // {label:"Skin Severity",  value: sev?.label||"Pending",                                   icon: sev?.icon||"bi-activity", color: sev?.txt||"#64748b", bg: sev?.bg||"rgba(20,184,166,0.06)"},
             {label:"Community",      value: userCount?`${userCount}+ users`:"…",                     icon:"bi-people",            color:"#a78bfa",  bg:"rgba(167,139,250,0.08)"},
           ].map(({label,value,icon,color,bg})=>(
             <div key={label} className="dh-stat dh-stat-card" style={{

@@ -323,8 +323,8 @@ const TreatmentPlan = () => {
               }}>Day {plan.currentDay}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-              <span style={{fontSize:12,color:"#64748b",fontWeight:500}}>Severity:</span>
-              <span style={{fontSize:12,fontWeight:800,color:sev?.txt}}>{sev?.label}</span>
+              {/* <span style={{fontSize:12,color:"#64748b",fontWeight:500}}>Severity:</span>
+              <span style={{fontSize:12,fontWeight:800,color:sev?.txt}}>{sev?.label}</span> */}
               <div style={{width:3,height:3,borderRadius:"50%",background:"#cbd5e1"}}/>
               <span style={{fontSize:12,color:"#64748b",fontWeight:500}}>
                 {plan.totalDaysCompleted} day{plan.totalDaysCompleted!==1?"s":""} completed
@@ -333,7 +333,7 @@ const TreatmentPlan = () => {
           </div>
 
           {/* Severity badge */}
-          {sev && (
+          {/* {sev && (
             <div style={{
               flexShrink:0,padding:"10px 20px",borderRadius:14,textAlign:"center",
               background:sev.bg, border:`1.5px solid ${sev.bdr}55`,
@@ -344,7 +344,7 @@ const TreatmentPlan = () => {
               </p>
               <p style={{margin:0,fontSize:13,fontWeight:900,color:sev.txt}}>{sev.label}</p>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* ── Day progress ── */}

@@ -374,10 +374,10 @@ const TreatmentHistory = () => {
           <h1 style={{margin:"0 0 5px",fontSize:"1.6rem",fontWeight:900,color:"#0f2b27",letterSpacing:"-0.5px",lineHeight:1.2}}>
             Treatment Progress
           </h1>
-          <p style={{margin:0,fontSize:13,color:"#64748b",fontWeight:500}}>
+          {/* <p style={{margin:0,fontSize:13,color:"#64748b",fontWeight:500}}>
             Tracking your skincare journey day by day
             {sev && <> · Severity: <span style={{fontWeight:700,color:sev.txt}}>{sev.label}</span></>}
-          </p>
+          </p> */}
         </div>
 
         {/* ── Stat cards ── */}
