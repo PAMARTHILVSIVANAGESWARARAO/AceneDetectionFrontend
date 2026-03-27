@@ -31,13 +31,12 @@ apiClient.interceptors.response.use(
 );
 
 // ─── Auth API ────────────────────────────────────────────────────────────────
+// NOTE: OTP verification, resend OTP, forgot password and reset password routes
+// have been removed from the backend (SMTP firewall blocked). Register now
+// returns a JWT token directly — no OTP step required.
 export const authAPI = {
   register: (data) => apiClient.post("/auth/register", data),
-  verifyOtp: (data) => apiClient.post("/auth/verify-otp", data),
-  resendOtp: (data) => apiClient.post("/auth/resend-otp", data),
   login: (data) => apiClient.post("/auth/login", data),
-  forgotPassword: (data) => apiClient.post("/auth/forgot-password", data),
-  resetPassword: (data) => apiClient.post("/auth/reset-password", data),
   getUserCount: () => apiClient.get("/auth/users/count"),
 };
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { authAPI } from "../services/api";
+import { authAPI, userAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import DoctorImage from "../assets/Register.png";
 
 /* ─────────────────────────────────────────────
@@ -182,7 +183,9 @@ const FormSkeleton = () => (
    REGISTER COMPONENT
 ───────────────────────────────────────────── */
 const Register = () => {
-  const navigate = useNavigate();
+  const navigate    = useNavigate();
+  const { login }   = useAuth();                // ← store JWT exactly like Login does
+
   const [ready, setReady]           = useState(false);
   const [formData, setFormData]     = useState({ username: "", email: "", password: "", retype_password: "" });
   const [showPass, setShowPass]     = useState(false);
@@ -238,10 +241,32 @@ const Register = () => {
     if (err) { toast.error(err); return; }
     setLoading(true);
     if (window.anime) window.anime({ targets: "#reg-submit", scale: [1, 0.95, 1], duration: 260, easing: "easeInOutQuad" });
+
     try {
-      await authAPI.register(formData);
-      toast.success("OTP sent to your email!");
-      navigate("/verify-otp", { state: { email: formData.email } });
+      // Backend returns { token, user, message } immediately — no OTP step
+      const res = await authAPI.register(formData);
+      const { token } = res.data;
+
+      // Store the token via AuthContext (same pattern as Login)
+      login(token);
+      toast.success("Account created! Welcome to AcnePilot 🎉");
+
+      // Determine the correct onboarding destination
+      let dest = "/dashboard";
+      try {
+        const sRes = await userAPI.getUserStatus();
+        sessionStorage.setItem("acnepilot_status_cache", JSON.stringify(sRes.data));
+        if (!sRes.data.questionnaire_completed) {
+          dest = "/onboarding/questionnaire";
+        } else if (!sRes.data.acne_analysis_completed) {
+          dest = "/onboarding/upload";
+        }
+      } catch (_) {
+        // If status check fails, new users always start at questionnaire
+        dest = "/onboarding/questionnaire";
+      }
+
+      navigate(dest, { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -464,7 +489,7 @@ const Register = () => {
             opacity: 0,
           }}
         >
-          {/* Concentric decorative rings — like the reference image */}
+          {/* Concentric decorative rings */}
           {[520, 380, 250].map((size, i) => (
             <div key={i} className="deco-ring" style={{ width: size, height: size }} />
           ))}
@@ -511,8 +536,6 @@ const Register = () => {
               AI-powered acne tracking & personalised treatment recommendations — built just for you.
             </p>
           </div>
-
-          
 
         </div>
         {/* END RIGHT PANEL */}

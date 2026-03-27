@@ -9,9 +9,6 @@ import NotFoundPage from "./HeroPage/NotFound/NotFoundPage";
 // Auth
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
-import VerifyOtp from "./Pages/VerifyOtp";
-import ForgotPassword from "./Pages/ForgotPassword";
-import ResetPassword from "./Pages/ResetPassword";
 
 // Onboarding
 import Questionnaire from "./Pages/Onboarding/Questionnaire";
@@ -59,10 +56,7 @@ const App = () => {
         {/* Auth routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/verify-otp" element={<VerifyOtp />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-
+        
         {/* Onboarding - protected */}
         <Route path="/onboarding/questionnaire" element={
           <ProtectedRoute><Questionnaire /></ProtectedRoute>

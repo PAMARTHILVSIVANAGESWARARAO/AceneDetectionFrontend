@@ -91,17 +91,6 @@ const GLOBAL_CSS = `
   }
   .login-register-link:hover { color: #0d9488; border-color: #0d9488; }
 
-  /* ── Forgot link ── */
-  .login-forgot-link {
-    color: #14b8a6;
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Poppins', sans-serif;
-    text-decoration: none;
-    transition: color .2s;
-  }
-  .login-forgot-link:hover { color: #0d9488; }
-
   /* ── Animation entry ── */
   .login-form-item { opacity: 0; }
 
@@ -406,16 +395,11 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Password */}
+              {/* Password — "Forgot password?" link removed: route no longer exists in backend */}
               <div className="login-form-item" style={{ marginBottom: 26 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-                  <label style={{ fontSize: 12.5, fontWeight: 700, color: "#0f766e", textTransform: "uppercase", letterSpacing: 0.4, fontFamily: "'Poppins',sans-serif" }}>
-                    Password
-                  </label>
-                  <Link to="/forgot-password" className="login-forgot-link">
-                    Forgot password?
-                  </Link>
-                </div>
+                <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "#0f766e", marginBottom: 7, textTransform: "uppercase", letterSpacing: 0.4, fontFamily: "'Poppins',sans-serif" }}>
+                  Password
+                </label>
                 <div style={{ position: "relative" }}>
                   <i className="bi bi-lock-fill" style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: "#14b8a6", fontSize: 15 }} />
                   <input
